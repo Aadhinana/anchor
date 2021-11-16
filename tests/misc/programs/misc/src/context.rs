@@ -258,3 +258,10 @@ pub struct TestMultidimensionalArray<'info> {
     #[account(zero)]
     pub data: Account<'info, DataMultidimensionalArray>,
 }
+
+#[derive(Accounts)]
+pub struct TestVecMut<'info> {
+    #[account(mut)]
+    pub data: Vec<Account<'info, DataWithFilter>>,
+    pub system_program: Program<'info, System>,
+}

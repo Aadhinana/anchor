@@ -197,4 +197,11 @@ pub mod misc {
         ctx.accounts.data.data = data;
         Ok(())
     }
+
+    pub fn test_vec_mut(ctx: Context<TestVecMut>, filterable: Pubkey) -> ProgramResult {
+        for acc in ctx.accounts.data.iter_mut() {
+            acc.filterable = filterable;
+        }
+        Ok(())
+    }
 }

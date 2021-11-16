@@ -176,10 +176,14 @@ pub fn generate_constraint_close(f: &Field, c: &ConstraintClose) -> proc_macro2:
 
 pub fn generate_constraint_mut(f: &Field, c: &ConstraintMut) -> proc_macro2::TokenStream {
     let ident = &f.ident;
+    let is_writable = match f.ty {
+        Ty::VecAccount(_) => quote! { #ident.to_account_infos().iter().all(|x| x.is_writable) },
+        _ => quote! { #ident.to_account_info().is_writable },
+    };
     let error = generate_custom_error(&c.error, quote! { ConstraintMut });
     quote! {
-        if !#ident.to_account_info().is_writable {
-            return Err(#error);
+        if !#is_writable {
+            return Err(anchor_lang::__private::ErrorCode::ConstraintMut.into());
         }
     }
 }
@@ -202,18 +206,18 @@ pub fn generate_constraint_has_one(f: &Field, c: &ConstraintHasOne) -> proc_macr
 
 pub fn generate_constraint_signer(f: &Field, c: &ConstraintSigner) -> proc_macro2::TokenStream {
     let ident = &f.ident;
-    let info = match f.ty {
-        Ty::AccountInfo => quote! { #ident },
-        Ty::ProgramAccount(_) => quote! { #ident.to_account_info() },
-        Ty::Account(_) => quote! { #ident.to_account_info() },
-        Ty::Loader(_) => quote! { #ident.to_account_info() },
-        Ty::AccountLoader(_) => quote! { #ident.to_account_info() },
-        Ty::CpiAccount(_) => quote! { #ident.to_account_info() },
+    let is_signer = match f.ty {
+        Ty::AccountInfo => quote! { #ident.to_account_info().is_signer },
+        Ty::VecAccount(_) => quote! { #ident.to_account_infos().iter().all(|x| x.is_signer) },
+        Ty::ProgramAccount(_) => quote! { #ident.to_account_info().to_account_info().is_signer },
+        Ty::Account(_) => quote! { #ident.to_account_info().to_account_info().is_signer },
+        Ty::Loader(_) => quote! { #ident.to_account_info().to_account_info().is_signer },
+        Ty::CpiAccount(_) => quote! { #ident.to_account_info().to_account_info().is_signer },
         _ => panic!("Invalid syntax: signer cannot be specified."),
     };
     let error = generate_custom_error(&c.error, quote! { ConstraintSigner });
     quote! {
-        if !#info.is_signer {
+        if !#is_signer {
             return Err(#error);
         }
     }
