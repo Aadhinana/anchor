@@ -3,15 +3,16 @@ cluster = "localnet"
 wallet = "~/.config/solana/id.json"
 
 [programs.localnet]
-misc = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
-misc2 = "HmbTLCmaGvZhKnn1Zfa1JVnp7vkMV4DYVxPLWBVoN65L"
+# misc = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
+# misc2 = "HmbTLCmaGvZhKnn1Zfa1JVnp7vkMV4DYVxPLWBVoN65L"
+shared = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
 
-[[test.genesis]]
-address = "FtMNMKp9DZHKWUyVAsj3Q5QV8ow4P3fUPP7ZrWEQJzKr"
-program = "./target/deploy/misc.so"
+# [[test.genesis]]
+# address = "FtMNMKp9DZHKWUyVAsj3Q5QV8ow4P3fUPP7ZrWEQJzKr"
+# program = "./target/deploy/misc.so"
 
 [workspace]
-exclude = ["programs/shared"]
+exclude = ["programs/misc", "programs/misc2"]
 
 [scripts]
 test = "yarn run mocha -t 1000000 tests/"
