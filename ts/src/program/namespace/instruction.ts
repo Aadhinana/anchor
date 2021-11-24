@@ -8,6 +8,7 @@ import {
   IdlAccount,
   IdlAccountItem,
   IdlAccounts,
+  IdlAccountVec,
   IdlInstruction,
 } from "../../idl";
 import { IdlError } from "../../error";
@@ -71,14 +72,15 @@ export default class InstructionNamespaceFactory {
 
   public static accountsArray(
     ctx: Accounts | undefined,
-    accounts: readonly IdlAccountItem[]
+    accounts: readonly IdlAccountItem[],
+    isVector?: Boolean,
   ): AccountMeta[] {
     if (!ctx) {
       return [];
     }
 
     return accounts
-      .map((acc: IdlAccountItem) => {
+      .map((acc: IdlAccountItem, i) => {
         // Nested accounts.
         const nestedAccounts: IdlAccountItem[] | undefined =
           "accounts" in acc ? acc.accounts : undefined;
@@ -86,15 +88,27 @@ export default class InstructionNamespaceFactory {
           const rpcAccs = ctx[acc.name] as Accounts;
           return InstructionNamespaceFactory.accountsArray(
             rpcAccs,
-            (acc as IdlAccounts).accounts
+            (acc as IdlAccounts).accounts,
+            acc["vecIndicator"] ?? false
           ).flat();
         } else {
           const account: IdlAccount = acc as IdlAccount;
-          return {
-            pubkey: translateAddress(ctx[acc.name] as Address),
-            isWritable: account.isMut,
-            isSigner: account.isSigner,
-          };
+          // handle vectors separately.
+          // ctx is an array instead of the normal object thing.
+          if (isVector) {
+            console.log(ctx[i])
+            return {
+              pubkey: translateAddress(ctx[i] as Address),
+              isWritable: account.isMut,
+              isSigner: account.isSigner,
+            };
+          } else {
+            return {
+              pubkey: translateAddress(ctx[acc.name] as Address),
+              isWritable: account.isMut,
+              isSigner: account.isSigner,
+            };
+          }
         }
       })
       .flat();

@@ -456,14 +456,34 @@ fn idl_accounts(
                     accounts,
                 })
             }
-            AccountField::Field(acc) => IdlAccountItem::IdlAccount(IdlAccount {
-                name: acc.ident.to_string().to_mixed_case(),
-                is_mut: acc.constraints.is_mutable(),
-                is_signer: match acc.ty {
-                    Ty::Signer => true,
-                    _ => acc.constraints.is_signer(),
-                },
-            }),
+            AccountField::Field(acc) => match acc.ty {
+                Ty::VecAccount(_) => IdlAccountItem::IdlAccountsVec(IdlAccountsVec {
+                    name: acc.ident.to_string().to_mixed_case(),
+                    vec_indicator: true,
+                    // Need to substitue the actual values here
+                    // here the names will be indicated with their respective indexs to access them properly on the TS side
+                    accounts: vec![
+                        IdlAccountItem::IdlAccount(IdlAccount {
+                            name: "dummy1".to_string(),
+                            is_mut: false,
+                            is_signer: false,
+                        }),
+                        IdlAccountItem::IdlAccount(IdlAccount {
+                            name: "dummy2".to_string(),
+                            is_mut: false,
+                            is_signer: false,
+                        }),
+                    ],
+                }),
+                _ => IdlAccountItem::IdlAccount(IdlAccount {
+                    name: acc.ident.to_string().to_mixed_case(),
+                    is_mut: acc.constraints.is_mutable(),
+                    is_signer: match acc.ty {
+                        Ty::Signer => true,
+                        _ => acc.constraints.is_signer(),
+                    },
+                }),
+            },
         })
         .collect::<Vec<_>>()
 }

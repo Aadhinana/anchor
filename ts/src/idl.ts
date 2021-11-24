@@ -36,12 +36,18 @@ export type IdlState = {
 
 export type IdlStateMethod = IdlInstruction;
 
-export type IdlAccountItem = IdlAccount | IdlAccounts;
+export type IdlAccountItem = IdlAccount | IdlAccounts | IdlAccountVec;
 
 export type IdlAccount = {
   name: string;
   isMut: boolean;
   isSigner: boolean;
+};
+
+export type IdlAccountVec = {
+  name: string;
+  accounts: IdlAccount[];
+  vecIndicator: boolean;
 };
 
 // A nested/recursive version of IdlAccount.

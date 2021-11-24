@@ -79,6 +79,7 @@ fn is_field_primitive(f: &syn::Field) -> ParseResult<bool> {
             | "Program"
             | "Signer"
             | "SystemAccount"
+            | "Vec"
     );
     Ok(r)
 }
@@ -101,6 +102,7 @@ fn parse_ty(f: &syn::Field) -> ParseResult<Ty> {
         "Account" => Ty::Account(parse_account_ty(&path)?),
         "Program" => Ty::Program(parse_program_ty(&path)?),
         "Signer" => Ty::Signer,
+        "Vec" => Ty::VecAccount(parse_vec_account(&path)?),
         "SystemAccount" => Ty::SystemAccount,
         _ => return Err(ParseError::new(f.ty.span(), "invalid account type given")),
     };
@@ -152,6 +154,21 @@ fn parse_cpi_account(path: &syn::Path) -> ParseResult<CpiAccountTy> {
     })
 }
 
+fn parse_vec_account(path: &syn::Path) -> ParseResult<VecAccountTy> {
+    if parser::tts_to_string(path)
+        .replace(" ", "")
+        .starts_with("Vec<AccountInfo<")
+    {
+        return Ok(VecAccountTy {
+            account_type_path: None,
+        });
+    }
+    let account_type_path = parse_account(path)?;
+    Ok(VecAccountTy {
+        account_type_path: Some(account_type_path),
+    })
+}
+
 fn parse_program_account(path: &syn::Path) -> ParseResult<ProgramAccountTy> {
     let account_ident = parse_account(path)?;
     Ok(ProgramAccountTy {
@@ -193,6 +210,9 @@ fn parse_account(mut path: &syn::Path) -> ParseResult<syn::TypePath> {
     if parser::tts_to_string(path)
         .replace(" ", "")
         .starts_with("Box<Account<")
+        || parser::tts_to_string(path)
+            .replace(" ", "")
+            .starts_with("Vec<Account<")
     {
         let segments = &path.segments[0];
         match &segments.arguments {

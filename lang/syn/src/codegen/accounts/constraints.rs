@@ -206,6 +206,7 @@ pub fn generate_constraint_signer(f: &Field, c: &ConstraintSigner) -> proc_macro
         Ty::AccountInfo => quote! { #ident },
         Ty::ProgramAccount(_) => quote! { #ident.to_account_info() },
         Ty::Account(_) => quote! { #ident.to_account_info() },
+        Ty::VecAccount(_) => quote! { #ident.to_account_info() },
         Ty::Loader(_) => quote! { #ident.to_account_info() },
         Ty::AccountLoader(_) => quote! { #ident.to_account_info() },
         Ty::CpiAccount(_) => quote! { #ident.to_account_info() },
@@ -559,8 +560,8 @@ pub fn generate_init(
                         #payer
                         #create_account
                     }
-                    let pa: #ty_decl = #from_account_info;
-                    pa
+                    let ra: #ty_decl = #from_account_info;
+                    ra
                 };
             }
         }

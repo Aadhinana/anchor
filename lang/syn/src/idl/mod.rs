@@ -44,10 +44,20 @@ pub struct IdlAccounts {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct IdlAccountsVec {
+    pub name: String,
+    pub accounts: Vec<IdlAccountItem>,
+    pub vec_indicator: bool,
+}
+
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(untagged)]
 pub enum IdlAccountItem {
     IdlAccount(IdlAccount),
     IdlAccounts(IdlAccounts),
+    IdlAccountsVec(IdlAccountsVec),
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]

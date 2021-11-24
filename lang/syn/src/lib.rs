@@ -175,6 +175,9 @@ impl Field {
         let account_ty = self.account_ty();
         let container_ty = self.container_ty();
         match &self.ty {
+            Ty::VecAccount(_) => quote! {
+                Vec<#container_ty<#account_ty>>
+            },
             Ty::AccountInfo => quote! {
                 AccountInfo
             },
@@ -228,6 +231,7 @@ impl Field {
         let container_ty = self.container_ty();
         match &self.ty {
             Ty::AccountInfo => quote! { #field.to_account_info() },
+            Ty::VecAccount(_) => quote! { #field.to_account_infos() },
             Ty::UncheckedAccount => {
                 quote! { UncheckedAccount::try_from(#field.to_account_info()) }
             }
@@ -281,6 +285,13 @@ impl Field {
             Ty::Account(_) => quote! {
                 anchor_lang::Account
             },
+            Ty::VecAccount(path) => {
+                if path.account_type_path == None {
+                    quote! { AccountInfo }
+                } else {
+                    quote! { anchor_lang::Account }
+                }
+            },
             Ty::AccountLoader(_) => quote! {
                 anchor_lang::AccountLoader
             },
@@ -307,6 +318,12 @@ impl Field {
             Ty::AccountInfo => quote! {
                 AccountInfo
             },
+            Ty::VecAccount(ty) => {
+                let ident = &ty.account_type_path;
+                quote! {
+                    #ident
+                }
+            }
             Ty::UncheckedAccount => quote! {
                 UncheckedAccount
             },
@@ -402,6 +419,7 @@ pub enum Ty {
     CpiAccount(CpiAccountTy),
     Sysvar(SysvarTy),
     Account(AccountTy),
+    VecAccount(VecAccountTy),
     Program(ProgramTy),
     Signer,
     SystemAccount,
@@ -461,6 +479,12 @@ pub struct AccountTy {
     pub account_type_path: TypePath,
     // True if the account has been boxed via `Box<T>`.
     pub boxed: bool,
+}
+
+#[derive(Debug, PartialEq)]
+pub struct VecAccountTy {
+    // The struct type of the account.
+    pub account_type_path: Option<TypePath>,
 }
 
 #[derive(Debug, PartialEq)]

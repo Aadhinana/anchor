@@ -7,68 +7,76 @@ mod shared {
     use super::*;
 
     // Normal
-    // pub fn initialize(ctx: Context<Initialize>, data: u64) -> ProgramResult {
-    //     let my_account = &mut ctx.accounts.my_account;
-    //     my_account.data = data;
-    //     Ok(())
-    // }
-
-    // pub fn update(ctx: Context<Update>, data: u64) -> ProgramResult {
-    //     let my_account = &mut ctx.accounts.my_account;
-    //     my_account.data = data;
-    //     Ok(())
-    // }
-
-    //  Vectors
     pub fn initialize(ctx: Context<Initialize>, data: u64) -> ProgramResult {
         let my_account = &mut ctx.accounts.my_account;
-        for acc in my_account.into_iter(){
-            acc.data = data;
+        my_account.data = data;
+        msg!("{:#?}", ctx.accounts.s);
+        for i in ctx.accounts.s.iter() {
+            msg!("ONE");
+            msg!("{:#?}", i.key);
         }
-        // my_account.data = data;
         Ok(())
     }
+
     pub fn update(ctx: Context<Update>, data: u64) -> ProgramResult {
         let my_account = &mut ctx.accounts.my_account;
-        for acc in my_account.into_iter(){
-            acc.data = data;
-        }
-        // my_account.data = data;
+        my_account.data = data;
         Ok(())
     }
+
+    //  Vectors
+    // pub fn initialize(ctx: Context<Initialize>, data: u64) -> ProgramResult {
+    //     let my_account = &mut ctx.accounts.my_account;
+    //     for acc in my_account.into_iter(){
+    //         acc.data = data;
+    //     }
+    //     // my_account.data = data;
+    //     Ok(())
+    // }
+    // pub fn update(ctx: Context<Update>, data: u64) -> ProgramResult {
+    //     let my_account = &mut ctx.accounts.my_account;
+    //     for acc in my_account.into_iter(){
+    //         acc.data = data;
+    //     }
+    //     // my_account.data = data;
+    //     Ok(())
+    // }
 }
 
+#[derive(Accounts)]
+pub struct Initialize<'info> {
+    #[account(init, payer = user, space = 8 + 51)]
+    pub my_account: Account<'info, DataAccount>,
+    pub user: Signer<'info>,
+    pub system_program: Program<'info, System>,
+    pub s: Vec<AccountInfo<'info>>,
+}
+
+#[derive(Accounts)]
+pub struct Update<'info> {
+    #[account(mut)]
+    pub my_account: Account<'info, DataAccount>,
+}
+
+// Vectors
 // #[derive(Accounts)]
 // pub struct Initialize<'info> {
 //     #[account(init, payer = user, space = 8 + 8)]
-//     pub my_account: Account<'info, DataAccount>,
+//     pub my_account: Vec<Account<'info, DataAccount>>,
 //     #[account(mut)]
 //     pub user: Signer<'info>,
 //     pub system_program: Program<'info, System>,
 // }
-
 // #[derive(Accounts)]
 // pub struct Update<'info> {
 //     #[account(mut)]
-//     pub my_account: Account<'info, DataAccount>,
+//     pub my_account: Vec<Account<'info, DataAccount>>,
 // }
-
-// Vectors
-#[derive(Accounts)]
-pub struct Initialize<'info> {
-    #[account(init, payer = user, space = 8 + 8)]
-    pub my_account: Vec<Account<'info, DataAccount>>,
-    #[account(mut)]
-    pub user: Signer<'info>,
-    pub system_program: Program<'info, System>,
-}
-#[derive(Accounts)]
-pub struct Update<'info> {
-    #[account(mut)]
-    pub my_account: Vec<Account<'info, DataAccount>>,
-}
 
 #[account]
 pub struct DataAccount {
     pub data: u64,
+    pub lock: Pubkey,
+    pub locked: bool,
+    pub arr: [u8; 10],
 }

@@ -27,7 +27,7 @@ export default class Provider {
     readonly connection: Connection,
     readonly wallet: Wallet,
     readonly opts: ConfirmOptions
-  ) {}
+  ) { }
 
   static defaultOptions(): ConfirmOptions {
     return {
@@ -108,7 +108,8 @@ export default class Provider {
       .forEach((kp) => {
         tx.partialSign(kp);
       });
-
+    console.log("FINAL TX")
+    console.dir(tx, { depth: null })
     const rawTx = tx.serialize();
 
     const txId = await sendAndConfirmRawTransaction(
@@ -226,7 +227,7 @@ export interface Wallet {
  * Node only wallet.
  */
 export class NodeWallet implements Wallet {
-  constructor(readonly payer: Keypair) {}
+  constructor(readonly payer: Keypair) { }
 
   static local(): NodeWallet {
     const process = require("process");

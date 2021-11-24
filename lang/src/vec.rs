@@ -1,5 +1,6 @@
-use crate::{Accounts, ToAccountInfos, ToAccountMetas};
+use crate::{Accounts, AccountsExit, ToAccountInfos, ToAccountMetas};
 use solana_program::account_info::AccountInfo;
+use solana_program::entrypoint::ProgramResult;
 use solana_program::instruction::AccountMeta;
 use solana_program::program_error::ProgramError;
 use solana_program::pubkey::Pubkey;
@@ -29,6 +30,12 @@ impl<'info, T: Accounts<'info>> Accounts<'info> for Vec<T> {
         let mut vec: Vec<T> = Vec::new();
         T::try_accounts(program_id, accounts, ix_data).map(|item| vec.push(item))?;
         Ok(vec)
+    }
+}
+
+impl<'info, T: AccountsExit<'info>> AccountsExit<'info> for Vec<T> {
+    fn exit(&self, program_id: &Pubkey) -> ProgramResult {
+        self.iter().try_for_each(|account| account.exit(program_id))
     }
 }
 

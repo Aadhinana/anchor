@@ -1,5 +1,6 @@
 const assert = require("assert");
 const anchor = require("@project-serum/anchor");
+const { SystemProgram, Keypair } = anchor.web3;
 
 describe("basic-1", () => {
   // Use a local provider.
@@ -7,12 +8,14 @@ describe("basic-1", () => {
   const program = anchor.workspace.Shared;
   // Configure the client to use the local cluster.
   anchor.setProvider(provider);
+  let _myAccount1;
 
   it("Creates and initializes an account in a single atomic transaction (simplified)", async () => {
     // #region code-simplified
 
     // The Account to create.
-    const myAccount1 = anchor.web3.Keypair.generate();
+    const myAccount1 = Keypair.generate();
+    console.log(myAccount1.publicKey.toString())
 
     // Create the new account and initialize it with the program.
     // #region code-simplified
@@ -20,14 +23,14 @@ describe("basic-1", () => {
       accounts: {
         myAccount: myAccount1.publicKey,
         user: provider.wallet.publicKey,
-        systemProgram: anchor.web3.SystemProgram.programId,
+        systemProgram: SystemProgram.programId,
+        s: [provider.wallet.publicKey, SystemProgram.programId],
       },
       signers: [myAccount1],
     });
     // #endregion code-simplified
-
     // Fetch the newly created account from the cluster.
-    const account1 = await program.account.myAccount.fetch(myAccount1.publicKey);
+    const account1 = await program.account.dataAccount.fetch(myAccount1.publicKey);
 
     // Check it's state was initialized.
     assert.ok(account1.data.eq(new anchor.BN(1234)));
@@ -47,7 +50,7 @@ describe("basic-1", () => {
     });
 
     // Fetch the newly updated account.
-    const account1 = await program.account.myAccount.fetch(myAccount1.publicKey);
+    const account1 = await program.account.dataAccount.fetch(myAccount1.publicKey);
 
     // Check it's state was mutated.
     assert.ok(account1.data.eq(new anchor.BN(4321)));

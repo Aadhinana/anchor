@@ -42,6 +42,8 @@ export function validateAccounts(
   ixAccounts: IdlAccountItem[],
   accounts: Accounts = {}
 ) {
+  // Need to check if it fails or some shit. Dont' know. Recheck.
+  if (!ixAccounts["vecIndicator"]) return;
   ixAccounts.forEach((acc) => {
     if ("accounts" in acc) {
       validateAccounts(acc.accounts, accounts[acc.name] as Accounts);
